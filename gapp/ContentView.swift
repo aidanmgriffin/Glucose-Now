@@ -25,13 +25,11 @@ struct ContentView: View {
                 .navigationTitle("GlucoseNow")
                 .navigationBarTitleDisplayMode(.inline)
                 
-
                 VStack{
                     
                         NavigationLink(destination: logFood(), label: {
                             Text("Log Food")
                                 .font(.title)
-
                                 .frame(width: 350, height: 80)
                                 .background(Color.green)
                                 .cornerRadius(10)
@@ -98,18 +96,99 @@ class Results{
     var bsugar = 0
 }
 
-//logFood()
-struct logFood: View{
+struct Food: Identifiable {
+    let id = UUID()
+    let name: String
+    let numcalories: String
+    let key: Int
+}
+
+struct foodRow: View{
+    var food: Food
     
-    @State var calories: String = ""
-    
-    var body : some View{
-        VStack(alignment: .leading){
-            TextField("Enter the number of calories: ", text: $calories)
-            Text(calories)
+    var body: some View{
+        HStack{
+            if(food.key == 1)
+            {
+            Spacer()
+        Text("Food: ")
+            .fontWeight(.bold)
+        Text("\(food.name)")
+        Text("Calories: ")
+            .fontWeight(.bold)
+        Text(" \(food.numcalories)")
+            Spacer()
+            }
+            else if(food.key == 0)
+            {
+            Spacer()
+                Text("Previously Logged Foods")
+                    .fontWeight(.bold)
+            Spacer()
+            }
         }
     }
 }
+//logFood()
+struct logFood: View{
+    
+    @State var fooditem = ""
+    @State var calories = ""
+    @State var calorietotal = ""
+    @State var caloriesInt = 0
+    
+    
+    @State var foods = [
+        Food(name: "Example", numcalories: "000", key: 0)
+    ]
+    
+    var body : some View{
+        VStack(alignment: .leading){
+           
+           
+            HStack{
+                Spacer()
+            Text("Today's Calorie Total:")
+            Text("\(caloriesInt)")
+                Spacer()
+            }
+            TextField("Food Item", text: $fooditem)
+                .padding()
+                .textFieldStyle(.roundedBorder)
+            TextField("Calories", text: $calories)
+                .padding()
+                .keyboardType(.decimalPad)
+                .textFieldStyle(.roundedBorder)
+            
+            Button(action: submit)
+            {
+                Text("Submit")
+            }
+            
+            List(foods){ food in
+                foodRow(food: food)
+            }
+            
+        }
+        .navigationTitle("Log Food")
+
+    }
+    
+    func submit()
+    {
+        print("The number of calories = \(calories)")
+        let x = Int( calories ) ?? 0
+        caloriesInt += x
+       
+        print("\(caloriesInt)")
+        
+        let item = Food(name: fooditem, numcalories: calories, key: 1)
+        foods.append(item)
+        
+            }
+}
+
+
 
 struct logExercise: View{ //aka storeExerciseData
     
@@ -119,6 +198,8 @@ struct logExercise: View{ //aka storeExerciseData
         VStack(alignment: .leading){
             TextField("Enter the time spent exercising: ", text: $exercise)
             Text(exercise)
+                .navigationTitle("Log Exercise")
+
         }
     }
 }
@@ -131,6 +212,8 @@ struct logBloodSugar: View{ //aka stoorbloodsugar
         VStack(alignment: .leading){
             TextField("Enter your blood sugar: ", text: $bloodsugar)
             Text(bloodsugar)
+                .navigationTitle("Log Blood Sugar")
+
         }
     }
 }
@@ -143,6 +226,8 @@ struct logWeight: View{ //aka stoorbloodsugar
         VStack(alignment: .leading){
             TextField("Enter your weight: ", text: $weight)
             Text(weight)
+                .navigationTitle("Log Weight")
+            
         }
     }
 }
@@ -186,7 +271,7 @@ struct CalorieView: View{
             VStack{
                 Text("Calories:")
                     .font(.title2)
-                Text("534")
+                Text("000")
                     .font(.title3)
             }
             
@@ -211,7 +296,7 @@ struct ExerciseView: View{
             VStack{
                 Text("Exercise:")
                     .font(.title2)
-                Text("2H")
+                Text("000")
                     .font(.title3)
             }
             
@@ -236,7 +321,7 @@ struct GlucoseView: View{
             VStack{
                 Text("Glucose:")
                     .font(.title2)
-                Text("13")
+                Text("000")
                     .font(.title3)
             }
             
@@ -300,8 +385,13 @@ struct CardView: View{
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView()
-            .previewDevice("iPhone 12")
+        Group {
+            ContentView()
+                .previewDevice("iPhone 12")
             .previewInterfaceOrientation(.portrait)
+            ContentView()
+                .previewDevice("iPhone 12")
+                .previewInterfaceOrientation(.portrait)
+        }
     }
 }
