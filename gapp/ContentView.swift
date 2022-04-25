@@ -8,6 +8,9 @@
 import SwiftUI
 
 // below is the entirety of the code used to display whats on the preview. Glucose Now
+
+public var caloriesShared = 0
+
 struct ContentView: View {
     
     
@@ -25,6 +28,7 @@ struct ContentView: View {
                 .navigationTitle("GlucoseNow")
                 .navigationBarTitleDisplayMode(.inline)
                 
+                Text("\(caloriesShared)")
                 VStack{
                     
                         NavigationLink(destination: logFood(), label: {
@@ -96,8 +100,8 @@ class Results{
     var bsugar = 0
 }
 
-struct Food: Identifiable {
-    let id = UUID()
+public struct Food: Identifiable {
+    public var id = UUID()
     let name: String
     let numcalories: String
     let key: Int
@@ -129,6 +133,14 @@ struct foodRow: View{
         }
     }
 }
+
+
+public var foods = [
+    Food(name: "Example", numcalories: "000", key: 0)
+]
+
+
+
 //logFood()
 struct logFood: View{
     
@@ -136,20 +148,16 @@ struct logFood: View{
     @State var calories = ""
     @State var calorietotal = ""
     @State var caloriesInt = 0
-    
-    
-    @State var foods = [
-        Food(name: "Example", numcalories: "000", key: 0)
-    ]
-    
+        
+
     var body : some View{
         VStack(alignment: .leading){
-           
-           
+                      
             HStack{
                 Spacer()
             Text("Today's Calorie Total:")
             Text("\(caloriesInt)")
+            Text("\(caloriesShared)")
                 Spacer()
             }
             TextField("Food Item", text: $fooditem)
@@ -178,12 +186,15 @@ struct logFood: View{
     {
         print("The number of calories = \(calories)")
         let x = Int( calories ) ?? 0
-        caloriesInt += x
-       
-        print("\(caloriesInt)")
-        
+        caloriesShared += x
+               
         let item = Food(name: fooditem, numcalories: calories, key: 1)
         foods.append(item)
+        
+        caloriesInt = caloriesShared
+        
+        print("\(caloriesShared)")
+
         
             }
 }
@@ -271,7 +282,7 @@ struct CalorieView: View{
             VStack{
                 Text("Calories:")
                     .font(.title2)
-                Text("000")
+                Text("\(caloriesShared)")
                     .font(.title3)
             }
             
@@ -296,7 +307,7 @@ struct ExerciseView: View{
             VStack{
                 Text("Exercise:")
                     .font(.title2)
-                Text("000")
+                Text("\(caloriesShared)")
                     .font(.title3)
             }
             
