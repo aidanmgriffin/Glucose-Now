@@ -11,27 +11,34 @@ import SwiftUI
 
 public var caloriesShared = 0
 
+
 struct ContentView: View {
     
-    
+
     @State private var selection: String? = nil
+    @State var calDisplay: Int = 0
+    @State var exDisplay: Int = 0
+    @State var meDisplay: Int = 0
+
     
     var logbuttonnames = ["Log Food", "Log Exercise", "Take Measurement"]
     let date = Date()
     
+
     var body: some View {
         
+
         NavigationView
         {
             VStack{
-            HomeView()
+            HomeView(calories: $calDisplay, exerciseHours: $exDisplay)
                 .navigationTitle("GlucoseNow")
                 .navigationBarTitleDisplayMode(.inline)
+
                 
-                Text("\(caloriesShared)")
                 VStack{
                     
-                        NavigationLink(destination: logFood(), label: {
+                    NavigationLink(destination: logFood(calDisplay: $calDisplay), label: {
                             Text("Log Food")
                                 .font(.title)
                                 .frame(width: 350, height: 80)
@@ -39,7 +46,7 @@ struct ContentView: View {
                                 .cornerRadius(10)
 
                         })
-                    NavigationLink(destination: Text("buttonindex"), label: {
+                    NavigationLink(destination: logExercise(exerciseDisplay: $exDisplay), label: {
                         Text("Log Exercise")
                             .font(.title)
 
@@ -73,8 +80,12 @@ struct ContentView: View {
 
              
             }
-        }
+            
+        }.ignoresSafeArea(.all)
+
+      
     }
+    
     var reportview: some View {
         Button(action: {}, label: {
         Text("Report View")
@@ -91,14 +102,9 @@ struct ContentView: View {
         Image(systemName: "questionmark.circle")
         })
     }
-    
+
 }
  
-class Results{
-    var calories = 0
-    var exercise = 0
-    var bsugar = 0
-}
 
 public struct Food: Identifiable {
     public var id = UUID()
@@ -148,16 +154,17 @@ struct logFood: View{
     @State var calories = ""
     @State var calorietotal = ""
     @State var caloriesInt = 0
+    @Binding var calDisplay: Int
         
 
     var body : some View{
+        
         VStack(alignment: .leading){
                       
             HStack{
                 Spacer()
             Text("Today's Calorie Total:")
-            Text("\(caloriesInt)")
-            Text("\(caloriesShared)")
+                Text("\(calDisplay)")
                 Spacer()
             }
             TextField("Food Item", text: $fooditem)
@@ -168,7 +175,7 @@ struct logFood: View{
                 .keyboardType(.decimalPad)
                 .textFieldStyle(.roundedBorder)
             
-            Button(action: submit)
+            Button(action: submitFood)
             {
                 Text("Submit")
             }
@@ -182,38 +189,143 @@ struct logFood: View{
 
     }
     
-    func submit()
+    func submitFood()
     {
         print("The number of calories = \(calories)")
         let x = Int( calories ) ?? 0
-        caloriesShared += x
+        caloriesInt += x
                
         let item = Food(name: fooditem, numcalories: calories, key: 1)
         foods.append(item)
         
-        caloriesInt = caloriesShared
+//        caloriesInt = caloriesShared
+        calDisplay = caloriesInt
         
-        print("\(caloriesShared)")
+        print("\(caloriesInt)")
 
+        
         
             }
 }
 
+public struct Exercise: Identifiable {
+    public var id = UUID()
+    let exercisename: String
+    let hours: String
+    let calsBurned: String
+    let key: Int
+}
 
-
-struct logExercise: View{ //aka storeExerciseData
-    
-    @State var exercise: String = ""
+struct exerciseRow: View{
+    var exercise: Exercise
     
     var body: some View{
-        VStack(alignment: .leading){
-            TextField("Enter the time spent exercising: ", text: $exercise)
-            Text(exercise)
-                .navigationTitle("Log Exercise")
-
+        HStack{
+            if(exercise.key == 1)
+            {
+            Spacer()
+        Text("Exercise: ")
+            .fontWeight(.bold)
+        Text("\(exercise.exercisename)")
+        Text("Time: ")
+            .fontWeight(.bold)
+        Text("\(exercise.hours) h")
+//        Text("Calories Burned: ")
+//            .fontWeight(.bold)
+//        Text(" \(exercise.calsBurned)")
+            Spacer()
+            }
+            else if(exercise.key == 0)
+            {
+            Spacer()
+                Text("Previously Logged Exercises")
+                    .fontWeight(.bold)
+            Spacer()
+            }
         }
     }
 }
+
+
+public var exercises = [
+    Exercise(exercisename: "example", hours: "0", calsBurned: "0", key: 0)
+]
+
+
+
+//logFood()
+struct logExercise: View{
+    
+    @State var exercise = ""
+    @State var hours = ""
+    @State var hoursInt = 0
+    @State var caloriesburned = ""
+    @State var caloriesburnedInt = 0
+    @Binding var exerciseDisplay: Int
+        
+
+    var body : some View{
+        
+        VStack(alignment: .leading){
+                      
+            HStack{
+                Spacer()
+            Text("Today's Exercise Total:")
+                if(exerciseDisplay < 60) //display time under an hour.
+                {
+                    Text("\(exerciseDisplay)")
+                    Spacer()
+                }
+                else{
+                    let hourVal = exerciseDisplay / 60
+                    let minutesVal = exerciseDisplay % 60
+                    
+                    Text("\(hourVal) h \(minutesVal) m")
+                    Spacer()
+                }
+                
+            }
+            TextField("Exercise", text: $exercise)
+                .padding()
+                .textFieldStyle(.roundedBorder)
+            TextField("Minutes", text: $hours)
+                .padding()
+                .keyboardType(.decimalPad)
+                .textFieldStyle(.roundedBorder)
+            TextField("Calories Burned", text: $caloriesburned)
+                .padding()
+                .keyboardType(.decimalPad)
+                .textFieldStyle(.roundedBorder)
+            
+            Button(action: submitExercise)
+            {
+                Text("Submit")
+                    .multilineTextAlignment(.center)
+            }
+            
+            
+            List(exercises){ exercise in
+                exerciseRow(exercise: exercise)
+            }
+            
+        }
+        .navigationTitle("Log Exercise")
+
+    }
+    
+    func submitExercise()
+    {
+        print("The number of hours = \(hours) h")
+        let x = Int( hours ) ?? 0
+        hoursInt += x
+               
+        let item = Exercise(exercisename: exercise, hours: hours, calsBurned: caloriesburned, key: 1)
+        exercises.append(item)
+        
+        exerciseDisplay = hoursInt
+            }
+}
+
 
 struct logBloodSugar: View{ //aka stoorbloodsugar
     
@@ -247,6 +359,8 @@ struct logWeight: View{ //aka stoorbloodsugar
 
 struct HomeView: View{
     
+    @Binding var calories: Int
+    @Binding var exerciseHours: Int
 
     let date = Date()
     
@@ -258,8 +372,8 @@ struct HomeView: View{
             
             Spacer()
                         
-            CalorieView()
-            ExerciseView()
+            CalorieView(calories: $calories)
+            ExerciseView(exercise: $exerciseHours)
             GlucoseView()
             
             Spacer()
@@ -275,6 +389,8 @@ struct HomeView: View{
                                 
 struct CalorieView: View{
     
+    @Binding var calories: Int
+    
     var body: some View
     {
         
@@ -282,7 +398,7 @@ struct CalorieView: View{
             VStack{
                 Text("Calories:")
                     .font(.title2)
-                Text("\(caloriesShared)")
+                Text("\(calories)")
                     .font(.title3)
             }
             
@@ -298,6 +414,8 @@ struct CalorieView: View{
 }
 
 struct ExerciseView: View{
+    
+    @Binding var exercise: Int
     
     var body: some View
     {
@@ -387,7 +505,6 @@ struct CardView: View{
 
 
 
-
     
     
     
@@ -400,9 +517,7 @@ struct ContentView_Previews: PreviewProvider {
             ContentView()
                 .previewDevice("iPhone 12")
             .previewInterfaceOrientation(.portrait)
-            ContentView()
-                .previewDevice("iPhone 12")
-                .previewInterfaceOrientation(.portrait)
+         
         }
     }
 }
