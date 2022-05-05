@@ -18,6 +18,8 @@ struct ContentView: View {
     @State private var selection: String? = nil
     @State var calDisplay: Int = 0
     @State var exDisplay: Int = 0
+    @State var calgoalDisplay: Int = 0
+    @State var exgoalDisplay: Int = 0
     @State var meDisplay: Int = 0
 
     
@@ -31,7 +33,7 @@ struct ContentView: View {
         NavigationView
         {
             VStack{
-            HomeView(calories: $calDisplay, exerciseHours: $exDisplay)
+                HomeView(calories: $calDisplay, exerciseHours: $exDisplay, caloriesgoal: $calgoalDisplay, exercisehoursGoal: $exgoalDisplay)
                 .navigationTitle("GlucoseNow")
                 .navigationBarTitleDisplayMode(.inline)
 
@@ -93,10 +95,9 @@ struct ContentView: View {
         })
     }
     var account: some View{
-        Button(action: {}, label: {
-        Image(systemName: "person.circle")
-        })
+        NavigationLink(destination: accountView(calgoalDisplay: $calgoalDisplay, exgoalDisplay: $exgoalDisplay), label: { Image(systemName: "person.circle")})
     }
+                       
     var help: some View {
         Button(action: {}, label: {
         Image(systemName: "questionmark.circle")
@@ -145,7 +146,7 @@ public var foods = [
     Food(name: "Example", numcalories: "000", key: 0)
 ]
 
-
+var caloriesInt = 0
 
 //logFood()
 struct logFood: View{
@@ -153,7 +154,7 @@ struct logFood: View{
     @State var fooditem = ""
     @State var calories = ""
     @State var calorietotal = ""
-    @State var caloriesInt = 0
+    
     @Binding var calDisplay: Int
         
 
@@ -177,7 +178,9 @@ struct logFood: View{
             
             Button(action: submitFood)
             {
+                Spacer()
                 Text("Submit")
+                Spacer()
             }
             
             List(foods){ food in
@@ -227,9 +230,24 @@ struct exerciseRow: View{
         Text("Exercise: ")
             .fontWeight(.bold)
         Text("\(exercise.exercisename)")
+                
         Text("Time: ")
             .fontWeight(.bold)
-        Text("\(exercise.hours) h")
+                
+            let exerciseDisplay = Int( exercise.hours ) ?? 0
+            if(exerciseDisplay < 60) //display time under an hour.
+            {
+                Text("\(exerciseDisplay)")
+                Spacer()
+            }
+            else{
+                let hourVal = exerciseDisplay / 60
+                let minutesVal = exerciseDisplay % 60
+                
+                Text("\(hourVal) h \(minutesVal) m")
+                Spacer()
+            }
+//        Text("\(exercise.hours) h")
 //        Text("Calories Burned: ")
 //            .fontWeight(.bold)
 //        Text(" \(exercise.calsBurned)")
@@ -299,8 +317,10 @@ struct logExercise: View{
             
             Button(action: submitExercise)
             {
+                Spacer()
                 Text("Submit")
-                    .multilineTextAlignment(.center)
+                Spacer()
+                
             }
             
             
@@ -326,6 +346,81 @@ struct logExercise: View{
             }
 }
 
+//logFood()
+struct accountView: View{
+    
+    @State var calorieGoal = ""
+    @State var caloriegoalInt = 0
+    @State var exerciseGoal = ""
+    @State var exercisegoalInt = 0
+    @Binding var calgoalDisplay: Int
+    @Binding var exgoalDisplay: Int
+        
+
+    var body : some View{
+        
+        VStack(alignment: .leading){
+            HStack{
+                Spacer()
+           Text("Set Daily Calorie Goal:")
+                Spacer()
+            }
+            TextField("calories", text: $calorieGoal)
+                .padding()
+                .textFieldStyle(.roundedBorder)
+            
+            Button(action: submitcalGoal)
+            {
+                Spacer()
+                Text("Submit")
+                Spacer()
+            }
+            .padding(.bottom)
+            
+            
+            HStack{
+                Spacer()
+                Text("Set Daily Exercise Goal:")
+                Spacer()
+            }
+            TextField("minutes", text: $exerciseGoal)
+                .padding()
+                .keyboardType(.decimalPad)
+                .textFieldStyle(.roundedBorder)
+            
+            Button(action: submitexGoal)
+            {
+                Spacer()
+                Text("Submit")
+                Spacer()
+            }
+            
+            Spacer()
+        }
+        .navigationTitle("Log Food")
+
+    }
+    
+    func submitcalGoal()
+    {
+        let x = Int( calorieGoal ) ?? 0
+        caloriegoalInt += x
+        
+        calgoalDisplay = caloriegoalInt
+        
+        print("\(caloriegoalInt)")
+        }
+    
+    func submitexGoal()
+    {
+        let x = Int( exerciseGoal ) ?? 0
+        exercisegoalInt += x
+        
+        exgoalDisplay = exercisegoalInt
+        
+        print("\(exercisegoalInt)")
+            }
+}
 
 struct logBloodSugar: View{ //aka stoorbloodsugar
     
@@ -361,6 +456,8 @@ struct HomeView: View{
     
     @Binding var calories: Int
     @Binding var exerciseHours: Int
+    @Binding var caloriesgoal: Int
+    @Binding var exercisehoursGoal: Int
 
     let date = Date()
     
@@ -372,8 +469,8 @@ struct HomeView: View{
             
             Spacer()
                         
-            CalorieView(calories: $calories)
-            ExerciseView(exercise: $exerciseHours)
+            CalorieView(calories: $calories, caloriesgoal: $caloriesgoal)
+            ExerciseView(exercise: $exerciseHours, exercisegoal: $exercisehoursGoal)
             GlucoseView()
             
             Spacer()
@@ -390,7 +487,8 @@ struct HomeView: View{
 struct CalorieView: View{
     
     @Binding var calories: Int
-    
+    @Binding var caloriesgoal: Int
+
     var body: some View
     {
         
@@ -404,11 +502,23 @@ struct CalorieView: View{
             
             Spacer()
             
-            Text("ChartHere")
+            VStack{
+                Text("Cals Remaining:")
+                    .font(.title2)
+                if((caloriesgoal - calories) > 0){
+                Text("\(caloriesgoal - calories)")
+                    .font(.title3)
+                }
+                else{
+                    Text("\(caloriesgoal)")
+                }
+            }
         }
         .padding(.horizontal)
         
         Spacer()
+        
+        
     
     }
 }
@@ -416,7 +526,8 @@ struct CalorieView: View{
 struct ExerciseView: View{
     
     @Binding var exercise: Int
-    
+    @Binding var exercisegoal: Int
+
     var body: some View
     {
         Spacer()
@@ -425,13 +536,41 @@ struct ExerciseView: View{
             VStack{
                 Text("Exercise:")
                     .font(.title2)
-                Text("\(caloriesShared)")
-                    .font(.title3)
+                if(exercise < 60) //display time under an hour.
+                {
+                    Text("\(exercise)")
+                        .font(.title3)
+                }
+                else{
+                    let hourVal = exercise / 60
+                    let minutesVal = exercise % 60
+                    
+                    Text("\(hourVal) h \(minutesVal) m")
+                        .font(.title3)
+
+                }
+                    
             }
             
             Spacer()
             
-            Text("ChartHere")
+            VStack{
+                Text("Time Remaining:")
+                    .font(.title2)
+                if(exercisegoal < 60) //display time under an hour.
+                {
+                    Text("\(exercisegoal)")
+                        .font(.title3)
+                }
+                else{
+                    let hourVal = exercisegoal / 60
+                    let minutesVal = exercisegoal % 60
+                    
+                    Text("\(hourVal) h \(minutesVal) m")
+                        .font(.title3)
+
+                }
+            }
         }
         .padding(.horizontal)
         
@@ -450,13 +589,18 @@ struct GlucoseView: View{
             VStack{
                 Text("Glucose:")
                     .font(.title2)
-                Text("000")
+                Text("0")
                     .font(.title3)
             }
             
             Spacer()
             
-            Text("ChartHere")
+            VStack{
+                Text("Temperature:")
+                    .font(.title2)
+                Text("0")
+                    .font(.title3)
+            }
         }
         .padding(.horizontal)
         
