@@ -38,6 +38,30 @@ We have chosen to employ the iterative process model. That entails performing th
 
 [Will](https://github.com/WalkeWill)
 
+Software Usage guide:
+Homescreen functions:
+Log Food, Log Exercise, Take Measurement, Account, Report view
+
+Log Food: 
+1. Add food item name through keyboard. ex. "Taco Salad"
+2. Enter calories amount for the Food item. ex. "350"
+3. Click submit to add item to previously logged foods and calories
+
+Log Exercise:
+1. Add Exercise type. ex. "Running" or "Rowing"
+2. Enter minutes spent exercising. ex. "30"
+3. Enter calories burned from exercise. ex. "150"
+4. Click submit to add exercise to previously logged exercises and calories
+
+Take Measurement:
+1. Enter glucose levels in mg/dL. ex. "100"
+2. Enter temperature in degrees. ex. "98"
+3. Click submit to save measurement
+
+Account:
+1. Enter Daily Calorie Goal in calories. ex. "2000"
+2. Enter Daily Exercise Goal in minutes. ex. "60"
+
 ## Future Updates
 This repository will be updated with continued work on the project. 
 
