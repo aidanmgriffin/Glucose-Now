@@ -20,7 +20,9 @@ struct ContentView: View {
     @State var exDisplay: Int = 0
     @State var calgoalDisplay: Int = 0
     @State var exgoalDisplay: Int = 0
-    @State var meDisplay: Int = 0
+    @State var glucoseDisplay: Int = 0
+    @State var tempDisplay: Int = 0
+    
 
     
     var logbuttonnames = ["Log Food", "Log Exercise", "Take Measurement"]
@@ -33,7 +35,7 @@ struct ContentView: View {
         NavigationView
         {
             VStack{
-                HomeView(calories: $calDisplay, exerciseHours: $exDisplay, caloriesgoal: $calgoalDisplay, exercisehoursGoal: $exgoalDisplay)
+                HomeView(calories: $calDisplay, exerciseHours: $exDisplay, caloriesgoal: $calgoalDisplay, exercisehoursGoal: $exgoalDisplay, glucose: $glucoseDisplay, temperature: $tempDisplay)
                 .navigationTitle("GlucoseNow")
                 .navigationBarTitleDisplayMode(.inline)
 
@@ -57,7 +59,7 @@ struct ContentView: View {
                             .cornerRadius(10)
 
                     })
-                    NavigationLink(destination: Text("buttonindex"), label: {
+                    NavigationLink(destination: takeMeasurement(glucoseDisplay: $glucoseDisplay, temperatureDisplay: $tempDisplay), label: {
                         Text("Take Measurement")
                             .font(.title)
 
@@ -89,10 +91,8 @@ struct ContentView: View {
     }
     
     var reportview: some View {
-        Button(action: {}, label: {
-        Text("Report View")
-            .padding(.horizontal)
-        })
+        NavigationLink(destination: reportView(caloriesIn: $calDisplay, caloriesGoal: $calgoalDisplay , exerciseIn: $exDisplay, exerciseGoal: $exgoalDisplay, glucose: $glucoseDisplay, temperature: $tempDisplay), label: {Text("Report View")
+            .padding(.horizontal) })
     }
     var account: some View{
         NavigationLink(destination: accountView(calgoalDisplay: $calgoalDisplay, exgoalDisplay: $exgoalDisplay), label: { Image(systemName: "person.circle")})
@@ -237,7 +237,7 @@ struct exerciseRow: View{
             let exerciseDisplay = Int( exercise.hours ) ?? 0
             if(exerciseDisplay < 60) //display time under an hour.
             {
-                Text("\(exerciseDisplay)")
+                Text("\(exerciseDisplay) m")
                 Spacer()
             }
             else{
@@ -291,7 +291,7 @@ struct logExercise: View{
             Text("Today's Exercise Total:")
                 if(exerciseDisplay < 60) //display time under an hour.
                 {
-                    Text("\(exerciseDisplay)")
+                    Text("\(exerciseDisplay) m")
                     Spacer()
                 }
                 else{
@@ -346,7 +346,7 @@ struct logExercise: View{
             }
 }
 
-//logFood()
+//accountView()
 struct accountView: View{
     
     @State var calorieGoal = ""
@@ -397,7 +397,7 @@ struct accountView: View{
             
             Spacer()
         }
-        .navigationTitle("Log Food")
+        .navigationTitle("Log Exercise")
 
     }
     
@@ -419,6 +419,83 @@ struct accountView: View{
         exgoalDisplay = exercisegoalInt
         
         print("\(exercisegoalInt)")
+            }
+}
+
+//takeMeasurement()
+struct takeMeasurement: View{
+    
+    @State var glucose = ""
+    @State var glucoseInt = 0
+    @State var temperature = ""
+    @State var temperatureInt = 0
+    @Binding var glucoseDisplay: Int
+    @Binding var temperatureDisplay: Int
+        
+    
+    var body : some View{
+        
+        VStack(alignment: .leading){
+            HStack{
+                Spacer()
+           Text("Enter Glucose:")
+                Spacer()
+            }
+            TextField("mg/dL", text: $glucose)
+                .padding()
+                .textFieldStyle(.roundedBorder)
+            
+            Button(action: submitGlucose)
+            {
+                
+                Spacer()
+                Text("Submit")
+                Spacer()
+            }
+            .padding(.bottom)
+            
+            
+            HStack{
+                Spacer()
+                Text("Enter temperature:")
+                Spacer()
+            }
+            TextField("degrees", text: $temperature)
+                .padding()
+                .keyboardType(.decimalPad)
+                .textFieldStyle(.roundedBorder)
+            
+            Button(action: submitTemp)
+            {
+                Spacer()
+                Text("Submit")
+                Spacer()
+            }
+            
+            Spacer()
+        }
+        .navigationTitle("Take Measurement")
+
+    }
+    
+    func submitGlucose()
+    {
+        let x = Int( glucose ) ?? 0
+        glucoseInt = x
+        
+        glucoseDisplay = glucoseInt
+        
+        print("\(glucoseInt)")
+        }
+    
+    func submitTemp()
+    {
+        let x = Int( temperature ) ?? 0
+        temperatureInt = x
+        
+        temperatureDisplay = temperatureInt
+        
+        print("\(temperatureInt)")
             }
 }
 
@@ -458,6 +535,8 @@ struct HomeView: View{
     @Binding var exerciseHours: Int
     @Binding var caloriesgoal: Int
     @Binding var exercisehoursGoal: Int
+    @Binding var glucose: Int
+    @Binding var temperature: Int
 
     let date = Date()
     
@@ -471,7 +550,7 @@ struct HomeView: View{
                         
             CalorieView(calories: $calories, caloriesgoal: $caloriesgoal)
             ExerciseView(exercise: $exerciseHours, exercisegoal: $exercisehoursGoal)
-            GlucoseView()
+            GlucoseView(glucose: $glucose, temperature: $temperature)
             
             Spacer()
         
@@ -538,7 +617,7 @@ struct ExerciseView: View{
                     .font(.title2)
                 if(exercise < 60) //display time under an hour.
                 {
-                    Text("\(exercise)")
+                    Text("\(exercise) m ")
                         .font(.title3)
                 }
                 else{
@@ -559,7 +638,7 @@ struct ExerciseView: View{
                     .font(.title2)
                 if(exercisegoal < 60) //display time under an hour.
                 {
-                    Text("\(exercisegoal)")
+                    Text("\(exercisegoal) m")
                         .font(.title3)
                 }
                 else{
@@ -581,6 +660,9 @@ struct ExerciseView: View{
 
 struct GlucoseView: View{
     
+    @Binding var glucose: Int
+    @Binding var temperature: Int
+    
     var body: some View
     {
         Spacer()
@@ -589,7 +671,7 @@ struct GlucoseView: View{
             VStack{
                 Text("Glucose:")
                     .font(.title2)
-                Text("0")
+                Text("\(glucose)")
                     .font(.title3)
             }
             
@@ -598,7 +680,7 @@ struct GlucoseView: View{
             VStack{
                 Text("Temperature:")
                     .font(.title2)
-                Text("0")
+                Text("\(temperature)")
                     .font(.title3)
             }
         }
@@ -639,20 +721,63 @@ struct CardView: View{
     }
 }
 
-
-
-
-
-
-
-
-
-
-
+struct reportView: View{
     
+    @Binding var caloriesIn: Int
+    @Binding var caloriesGoal: Int
+    @Binding var exerciseIn: Int
+    @Binding var exerciseGoal: Int
+    @Binding var glucose: Int
+    @Binding var temperature: Int
     
+    let date = Date()
     
-    
+    var body: some View{
+        
+        
+        Group{
+       
+            Text("\(date)")
+                .multilineTextAlignment(.center)
+        }
+        .padding(.bottom)
+        
+        Group{
+        Text("Calories:")
+                .font(.title)
+        Text("\(caloriesIn) / \(caloriesGoal)")
+        }
+        .padding(.vertical)
+        
+        Group{
+        Text("Exercise:")
+                .font(.title)
+        Text("\(exerciseIn) m / \(exerciseGoal) m")
+        }
+        .padding(.vertical)
+        
+        Group{
+        Text("Glucose:")
+                .font(.title)
+        Text("\(glucose)")
+        }
+        .padding(.vertical)
+        
+        Group{
+        Text("Temperature:")
+                .font(.title)
+        Text("\(temperature)")
+        }
+        .padding(.vertical)
+        
+        Spacer()
+        .navigationTitle("Report View")
+        
+    }
+        
+}
+
+
     
 
 struct ContentView_Previews: PreviewProvider {
